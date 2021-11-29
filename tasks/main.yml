@@ -1,50 +1,58 @@
-- name: install dependencies
+- name:         install dependencies
   apt:
     pkg:
       - php-ldap
       - php-markdown
 
-- name: check dokuwiki directory
-  stat:
-    path: /var/www/dokuwiki
-  register: dokuwiki_directory
-
-- name: install. stage1
-  unarchive:
-    src: https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
-    dest: /var/www
-    remote_src: yes
-    owner: www-data
-    group: www-data
-  when: not dokuwiki_directory.stat.exists
-  register: dokuwiki_unarchive
-
-- name: dokuwiki_directory
-  command:
-    cmd: find /var/www -type d -name 'dokuwiki-*'
-    creates: /var/www/dokuwiki
-  register: dokuwiki_downloaded_directory
-
-- name: install. stage2
-  command:
-    cmd: "mv {{ dokuwiki_downloaded_directory.stdout }} /var/www/dokuwiki"
-    creates: /var/www/dokuwiki/index.php
-
-- name: check local config files
-  delegate_to: localhost
-  stat:
-    path: "files/{{ inventory_hostname }}/dokuwiki"
-  register: dokuwiki_local_config_files
-
-- name: dokuwiki local configs
-  synchronize:
-    src: "files/{{ inventory_hostname }}/dokuwiki/"
-    dest: /var/www/dokuwiki/conf/
-  when: dokuwiki_local_config_files.stat.exists
-
-- name: chown www
+- name:         check www directory
   file:
-    owner: www-data
-    group: www-data
-    path: /var/www
-    recurse: yes
+    path:       /var/www
+    state:      directory
+    owner:      www-data
+    group:      www-data
+    mode:       0750
+
+- name:         check dokuwiki directory
+  stat:
+    path:       /var/www/dokuwiki
+  register:     dokuwiki_directory
+
+- name:         install. stage1
+  unarchive:
+    src:        https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
+    dest:       /var/www
+    remote_src: yes
+    owner:      www-data
+    group:      www-data
+  when:         not dokuwiki_directory.stat.exists
+  register:     dokuwiki_unarchive
+
+- name:         dokuwiki_directory
+  command:
+    cmd:        find /var/www -type d -name 'dokuwiki-*'
+    creates:    /var/www/dokuwiki
+  register:     dokuwiki_downloaded_directory
+
+- name:         install. stage2
+  command:
+    cmd:        "mv {{ dokuwiki_downloaded_directory.stdout }} /var/www/dokuwiki"
+    creates:    /var/www/dokuwiki/index.php
+
+- name:         check local config files
+  delegate_to:  localhost
+  stat:
+    path:       "files/{{ inventory_hostname }}/dokuwiki"
+  register:     dokuwiki_local_config_files
+
+- name:         dokuwiki local configs
+  synchronize:
+    src:        "files/{{ inventory_hostname }}/dokuwiki/"
+    dest:       /var/www/dokuwiki/conf/
+  when:         dokuwiki_local_config_files.stat.exists
+
+- name:         chown www
+  file:
+    owner:      www-data
+    group:      www-data
+    path:       /var/www
+    recurse:    yes
