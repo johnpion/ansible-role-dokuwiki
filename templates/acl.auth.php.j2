@@ -1,0 +1,37 @@
+# acl.auth.php
+# <?php exit()?>
+# Don't modify the lines above
+#
+# Access Control Lists
+#
+# Editing this file by hand shouldn't be necessary. Use the ACL
+# Manager interface instead.
+#
+# If your auth backend allows special char like spaces in groups
+# or user names you need to urlencode them (only chars <128, leave
+# UTF-8 multibyte chars as is)
+#
+# none   0
+# read   1
+# edit   2
+# create 4
+# upload 8
+# delete 16
+
+* @ALL 0
+
+{% if dokuwiki_admin is defined %}
+* {{ dokuwiki_admin }} 16
+{% endif %}
+
+{% if dokuwiki_acl_groups is defined %}
+{% for group in dokuwiki_acl_groups %}
+{% if group.path is defined %}{{ group.path }}{% else %}*{% endif %} @{{ group.name }} {{ group.acl }}
+{% endfor %}
+{% endif %}
+
+{% if dokuwiki_acl_users is defined %}
+{% for user in dokuwiki_acl_users %}
+{% if user.path is defined %}{{ user.path }}{% else %}*{% endif %} {{ user.name }} {{ user.acl }}
+{% endfor %}
+{% endif %}

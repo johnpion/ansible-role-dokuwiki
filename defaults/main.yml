@@ -1,0 +1,12 @@
+dokuwiki_superuser: "{{ dokuwiki_admin }}"
+dokuwiki_admin: admin
+# dokuwiki_admin_pass:
+# dokuwiki_admin_email:
+
+# dokuwiki_acl_users:
+#   - name: admin
+#     acl: 16
+
+dokuwiki_acl_groups:
+  - name: dokuwiki_admins
+    acl: 16

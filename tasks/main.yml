@@ -50,6 +50,20 @@
     dest:       /var/www/dokuwiki/conf/
   when:         dokuwiki_local_config_files.stat.exists
 
+- name:         config dokuwiki
+  template:
+    src:        "{{ config }}.j2"
+    dest:       "/var/www/dokuwiki/conf/{{ config }}"
+    owner:      www-data
+    group:      www-data
+    mode:       0440
+  loop_control:
+    loop_var:   config
+  loop:
+    - acl.auth.php
+    - local.php
+    - users.auth.php
+
 - name:         chown www
   file:
     owner:      www-data

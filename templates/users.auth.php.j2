@@ -1,0 +1,13 @@
+# users.auth.php
+# <?php exit()?>
+# Don't modify the lines above
+#
+# Userfile
+#
+# Format:
+#
+# login:passwordhash:Real Name:email:groups,comma,separated
+
+{% if dokuwiki_admin is defined %}
+{{ dokuwiki_admin }}:{{ dokuwiki_admin_pass|password_hash('sha512') }}:{{ dokuwiki_admin }}:{{ dokuwiki_admin_email }}:admin,users
+{% endif %}
