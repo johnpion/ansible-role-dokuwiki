@@ -1,72 +1,72 @@
-- name:         install dependencies
-  apt:
+- name: install dependencies
+  ansible.builtin.apt:
     pkg:
       - php-ldap
       - php-markdown
 
-- name:         check www directory
-  file:
-    path:       /var/www
-    state:      directory
-    owner:      www-data
-    group:      www-data
-    mode:       0750
+- name: check www directory
+  ansible.builtin.file:
+    path: /var/www
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: 0750
 
-- name:         check dokuwiki directory
-  stat:
-    path:       /var/www/dokuwiki
-  register:     dokuwiki_directory
+- name: check dokuwiki directory
+  ansible.builtin.stat:
+    path: /var/www/dokuwiki
+  register: dokuwiki_directory
 
-- name:         install. stage1
-  unarchive:
-    src:        https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
-    dest:       /var/www
-    remote_src: yes
-    owner:      www-data
-    group:      www-data
-  when:         not dokuwiki_directory.stat.exists
-  register:     dokuwiki_unarchive
+- name: install. stage1
+  ansible.builtin.unarchive:
+    src: https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
+    dest: /var/www
+    remote_src: true
+    owner: www-data
+    group: www-data
+  when: not dokuwiki_directory.stat.exists
+  register: dokuwiki_unarchive
 
-- name:         dokuwiki_directory
-  command:
-    cmd:        find /var/www -type d -name 'dokuwiki-*'
-    creates:    /var/www/dokuwiki
-  register:     dokuwiki_downloaded_directory
+- name: dokuwiki_directory
+  ansible.builtin.command:
+    cmd: find /var/www -type d -name 'dokuwiki-*'
+    creates: /var/www/dokuwiki
+  register: dokuwiki_downloaded_directory
 
-- name:         install. stage2
-  command:
-    cmd:        "mv {{ dokuwiki_downloaded_directory.stdout }} /var/www/dokuwiki"
-    creates:    /var/www/dokuwiki/index.php
+- name: install. stage2
+  ansible.builtin.command:
+    cmd: "mv {{ dokuwiki_downloaded_directory.stdout }} /var/www/dokuwiki"
+    creates: /var/www/dokuwiki/index.php
 
-- name:         check local config files
-  delegate_to:  localhost
-  stat:
-    path:       "files/{{ inventory_hostname }}/dokuwiki"
-  register:     dokuwiki_local_config_files
+- name: check local config files
+  delegate_to: localhost
+  ansible.builtin.stat:
+    path: "files/{{ inventory_hostname }}/dokuwiki"
+  register: dokuwiki_local_config_files
 
-- name:         dokuwiki local configs
+- name: dokuwiki local configs
   synchronize:
-    src:        "files/{{ inventory_hostname }}/dokuwiki/"
-    dest:       /var/www/dokuwiki/conf/
-  when:         dokuwiki_local_config_files.stat.exists
+    src: "files/{{ inventory_hostname }}/dokuwiki/"
+    dest: /var/www/dokuwiki/conf/
+  when: dokuwiki_local_config_files.stat.exists
 
-- name:         config dokuwiki
-  template:
-    src:        "{{ config }}.j2"
-    dest:       "/var/www/dokuwiki/conf/{{ config }}"
-    owner:      www-data
-    group:      www-data
-    mode:       0440
+- name: config dokuwiki
+  ansible.builtin.template:
+    src: "{{ config }}.j2"
+    dest: "/var/www/dokuwiki/conf/{{ config }}"
+    owner: www-data
+    group: www-data
+    mode: 0440
   loop_control:
-    loop_var:   config
+    loop_var: config
   loop:
     - acl.auth.php
     - local.php
     - users.auth.php
 
-- name:         chown www
-  file:
-    owner:      www-data
-    group:      www-data
-    path:       /var/www
-    recurse:    yes
+- name: chown www
+  ansible.builtin.file:
+    owner: www-data
+    group: www-data
+    path: /var/www
+    recurse: true
