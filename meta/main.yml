@@ -1,10 +1,15 @@
 galaxy_info:
-  author: John Seregin seregin.john@gmail.com
+  author: Ivan Serohin
   license: license Apache-2.0
-  min_ansible_version: '6.0'
-  description: Dokuwiki
-
+  role_name: dokuwiki
+  namespace: johnpion
+  description: download and install 'dokuwiki' html-files without nginx
+  min_ansible_version: '2.14'
   platforms:
     - name: Debian
       versions:
+        - wheezy
+        - jessie
+        - stretch
         - buster
+        - bullseye

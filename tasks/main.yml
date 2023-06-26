@@ -1,23 +1,23 @@
-- name: install dependencies
+- name: Install dependencies
   ansible.builtin.apt:
     pkg:
       - php-ldap
       - php-markdown
 
-- name: check www directory
+- name: Check www directory
   ansible.builtin.file:
     path: /var/www
     state: directory
     owner: www-data
     group: www-data
-    mode: 0750
+    mode: "0750"
 
-- name: check dokuwiki directory
+- name: Check dokuwiki directory
   ansible.builtin.stat:
     path: /var/www/dokuwiki
   register: dokuwiki_directory
 
-- name: install. stage1
+- name: Install. Stage1
   ansible.builtin.unarchive:
     src: https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
     dest: /var/www
@@ -27,36 +27,36 @@
   when: not dokuwiki_directory.stat.exists
   register: dokuwiki_unarchive
 
-- name: dokuwiki_directory
+- name: Check dokuwiki_downloaded_directory
   ansible.builtin.command:
     cmd: find /var/www -type d -name 'dokuwiki-*'
     creates: /var/www/dokuwiki
   register: dokuwiki_downloaded_directory
 
-- name: install. stage2
+- name: Install. Stage2
   ansible.builtin.command:
     cmd: "mv {{ dokuwiki_downloaded_directory.stdout }} /var/www/dokuwiki"
     creates: /var/www/dokuwiki/index.php
 
-- name: check local config files
+- name: Check local config files
   delegate_to: localhost
   ansible.builtin.stat:
     path: "files/{{ inventory_hostname }}/dokuwiki"
   register: dokuwiki_local_config_files
 
-- name: dokuwiki local configs
-  synchronize:
+- name: Dokuwiki copy local configs
+  ansible.posix.synchronize:
     src: "files/{{ inventory_hostname }}/dokuwiki/"
     dest: /var/www/dokuwiki/conf/
   when: dokuwiki_local_config_files.stat.exists
 
-- name: config dokuwiki
+- name: Config dokuwiki
   ansible.builtin.template:
     src: "{{ config }}.j2"
     dest: "/var/www/dokuwiki/conf/{{ config }}"
     owner: www-data
     group: www-data
-    mode: 0440
+    mode: "0440"
   loop_control:
     loop_var: config
   loop:
@@ -64,7 +64,7 @@
     - local.php
     - users.auth.php
 
-- name: chown www
+- name: Chown www
   ansible.builtin.file:
     owner: www-data
     group: www-data
